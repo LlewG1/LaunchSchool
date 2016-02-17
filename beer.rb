@@ -94,11 +94,26 @@ def englishNumber number
 end
 
 while number.to_i > 0 
-  puts englishNumber(number.to_i).capitalize + ' bottles of beer on the wall,' 
-  puts englishNumber(number.to_i).capitalize + ' bottles of beer!' 
-  puts 'Take one down,'
-  puts 'Pass it around,'
-  number = number.to_i - 1 
-  puts englishNumber(number.to_i).capitalize + ' bottles of beer on the wall!'
-  puts ''
+  if number.to_i > 1 
+    puts englishNumber(number.to_i).capitalize + ' bottles of beer on the wall,' 
+    puts englishNumber(number.to_i).capitalize + ' bottles of beer!' 
+    puts 'Take one down,'
+    puts 'Pass it around,'
+    number = number.to_i - 1 
+    if number.to_i > 1 
+      puts englishNumber(number.to_i).capitalize + ' bottles of beer on the wall!'
+      puts ''
+    else
+       puts englishNumber(number.to_i).capitalize + ' bottle of beer on the wall!'
+       puts ''
+    end
+  else 
+    puts englishNumber(number.to_i).capitalize + ' bottle of beer on the wall,' 
+    puts englishNumber(number.to_i).capitalize + ' bottle of beer!' 
+    puts 'Take one down,'
+    puts 'Pass it around,'
+    number = number.to_i - 1 
+    puts 'No bottles of beer on the wall!'
+    puts ''
+  end
 end 
