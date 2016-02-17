@@ -110,11 +110,10 @@ while number.to_i > 0
   else 
     puts englishNumber(number.to_i).capitalize + ' bottle of beer on the wall,' 
     puts englishNumber(number.to_i).capitalize + ' bottle of beer!' 
-    puts 'Take one down,'
+    puts 'Take it down,'
     puts 'Pass it around,'
     number = number.to_i - 1 
     puts 'No bottles of beer on the wall!'
     puts ''
   end
 end 
-
