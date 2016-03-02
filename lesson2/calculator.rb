@@ -1,9 +1,30 @@
-def prompt(message)
+require 'yaml'
+MESSAGES = YAML.load_file('calculator_messages.yml')
+LANGUAGE = 'en'
+
+def messages(message, lang='en')
+  MESSAGES[lang][message]
+end
+
+def prompt(key) 
+  message = messages(key, LANGUAGE)
+  Kernel.puts("=>#{message}")
+end
+
+def prompt2(message)
   Kernel.puts("=> #{message}")
 end
 
-def valid_number(num)
-  num.to_i() != 0
+def integer?(input)
+  input.to_i.to_s == input
+end
+
+def float?(input)
+  input.to_f.to_s == input
+end
+
+def number?(input)
+  integer?(input) || float?(input)
 end
 
 def operation_to_message(op)
@@ -19,55 +40,47 @@ def operation_to_message(op)
   end
 end
 
-prompt("Welcome to Calculator! Enter your name")
+prompt('welcome')
 
 name = ''
 loop do
   name = Kernel.gets().chomp()
   
   if name.empty?()
-    prompt("Make sure to use a valid name")
+    prompt('valid_name')
   else
     break
   end
 end
 
-prompt("Hi #{name}")
+prompt2("Hi #{name}")
 
 loop do # main loop
   number1 = ''
   loop do 
-    prompt("What's the first number?")
+    prompt('first_number')
     number1 = Kernel.gets().chomp()
     
-    if valid_number(number1)
+    if number?(number1)
       break
     else 
-      prompt("Hmm... that doesnt look like a valid number")
+      prompt('not_valid')
     end
   end
   
   number2 = ''
   loop do
-    prompt("What's the second number?")
+    prompt('second_number')
     number2 = Kernel.gets().chomp()
     
-    if valid_number(number2)
+    if number?(number2)
       break
     else
-      prompt("Hmm... that doesnt look like a valid number")
+      prompt('not_valid')
     end
   end
   
-  operator_prompt = <<-MSG
-    What operation would you like to perform?
-    1) add
-    2) subtract
-    3) multiply
-    4) divide
-  MSG
-  
-  prompt(operator_prompt)
+  prompt('operator_prompt')
   
   operator = ''
   loop do
@@ -76,11 +89,11 @@ loop do # main loop
     if %w(1 2 3 4).include?(operator)
       break
     else
-      prompt("Must choose 1, 2, 3 or 4")
+      prompt('choose')
     end
   end
   
-  prompt("#{operation_to_message(operator)} the two numbers...")
+  prompt2("#{operation_to_message(operator)} the two numbers...")
   
   result = case operator 
            when '1'
@@ -93,11 +106,11 @@ loop do # main loop
              number1.to_f() / number2.to_f()
           end
   
-  prompt("The result is #{result}")
+  prompt2("The result is #{result}")
   
-  prompt("Do you want to perform another calculation? (Y to calculate again)")
+  prompt('again')
   answer = Kernel.gets().chomp()
   break unless answer.downcase().start_with?('y')
 end
 
-prompt("Thankyou for using the calculator. Good Bye!")
+prompt('thankyou')
