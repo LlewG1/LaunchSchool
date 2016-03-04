@@ -15,14 +15,21 @@ end
 
 def display_results(player, computer)
   if win?(player, computer)
-    prompt("You won!")
+    prompt("You won this round!")
+    @user_wins = @user_wins + 1 
   elsif win?(computer, player)
-    prompt("Computer won!")
+    prompt("Computer won this round!")
+    @computer_wins = @computer_wins + 1
   else
     prompt("It's a tie!")
+    @ties = @ties + 1
   end
 end
 
+@user_wins = 0
+@computer_wins = 0
+@ties = 0
+  
 loop do
   choice = ''
   element_number = ''
@@ -43,13 +50,20 @@ loop do
 
   computer_choice = VALID_CHOICES.sample
 
-  prompt("You chose: #{VALID_CHOICES[element_number.to_i]}; Computer chose: #{computer_choice}")
+  prompt("You chose: #{choice}; Computer chose: #{computer_choice}")
 
   display_results(choice, computer_choice)
 
-  prompt("Do you want to play again?")
-  answer = Kernel.gets().chomp()
-  break unless answer.downcase().start_with?('y')
+  if @user_wins == 5
+    prompt("You won!")
+    break
+  elsif @computer_wins == 5
+    prompt("Computer won!")
+    break
+  end
+  prompt("You have #{@user_wins} wins")
+  prompt("Computer has #{@computer_wins} wins")
+  prompt("There have been #{@ties} ties")
 end
 
 prompt("Thankyou for playing!")
