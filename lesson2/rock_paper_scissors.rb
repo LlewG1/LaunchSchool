@@ -7,29 +7,36 @@ end
 
 def win?(first, second)
   (first == 'rock' && (second == 'scissors' || second == 'lizard')) ||
-  (first == 'paper' && (second == 'rock' || second == 'spock')) ||
-  (first == 'scissors' && (second == 'paper' || second == 'lizard')) ||
-  (first == 'spock' && (second == 'rock' || second == 'scissors')) ||
-  (first == 'lizard' && (second == 'spock' || second == 'paper'))
+    (first == 'paper' && (second == 'rock' || second == 'spock')) ||
+    (first == 'scissors' && (second == 'paper' || second == 'lizard')) ||
+    (first == 'spock' && (second == 'rock' || second == 'scissors')) ||
+    (first == 'lizard' && (second == 'spock' || second == 'paper'))
 end
 
 def display_results(player, computer)
   if win?(player, computer)
     prompt("You won this round!")
-    @user_wins = @user_wins + 1 
   elsif win?(computer, player)
     prompt("Computer won this round!")
-    @computer_wins = @computer_wins + 1
   else
     prompt("It's a tie!")
-    @ties = @ties + 1
+  end
+end
+
+def win_tracker(player, computer)
+  if win?(player, computer)
+    @user_wins += 1
+  elsif win?(computer, player)
+    @computer_wins += 1
+  else
+    @ties += 1
   end
 end
 
 @user_wins = 0
 @computer_wins = 0
 @ties = 0
-  
+
 loop do
   choice = ''
   element_number = ''
@@ -37,7 +44,7 @@ loop do
     prompt("Choose one: #{VALID_CHOICES.join(', ')}")
     choice = Kernel.gets().chomp()
 
-    if VALID_CHOICES.include?(choice) 
+    if VALID_CHOICES.include?(choice)
       break
     elsif SHORT_CHOICES.include?(choice)
       element_number = SHORT_CHOICES.index(choice)
@@ -53,6 +60,8 @@ loop do
   prompt("You chose: #{choice}; Computer chose: #{computer_choice}")
 
   display_results(choice, computer_choice)
+
+  win_tracker(choice, computer_choice)
 
   if @user_wins == 5
     prompt("You won!")
