@@ -1,4 +1,5 @@
 VALID_CHOICES = %w(rock paper scissors lizard spock)
+SHORT_CHOICES = %w(r p sc l sp)
 
 def prompt(message)
   Kernel.puts("=>#{message}")
@@ -22,13 +23,17 @@ def display_results(player, computer)
   end
 end
 
+user_wins = ''
+computer_wins = ''
+ties = ''
+
 loop do
   choice = ''
   loop do
     prompt("Choose one: #{VALID_CHOICES.join(', ')}")
     choice = Kernel.gets().chomp()
 
-    if VALID_CHOICES.include?(choice)
+    if VALID_CHOICES.include?(choice) || SHORT_CHOICES.include?(choice)
       break
     else
       prompt("Thats not a valid choice")
@@ -36,8 +41,9 @@ loop do
   end
 
   computer_choice = VALID_CHOICES.sample
-
-  prompt("You chose: #{choice}; Computer chose: #{computer_choice}")
+  element_number = SHORT_CHOICES.index(choice)
+  
+  prompt("You chose: #{VALID_CHOICES[element_number]}; Computer chose: #{computer_choice}")
 
   display_results(choice, computer_choice)
 
