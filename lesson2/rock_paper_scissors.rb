@@ -6,11 +6,11 @@ def prompt(message)
 end
 
 def win?(first, second)
-  (first == 'rock' && second == ('scissors' || 'lizard')) ||
-    (first == 'paper' && second == ('rock' || 'spock')) ||
-    (first == 'scissors' && second == ('paper' || 'lizard')) ||
-    (first == 'spock' && second == ('rock' || 'scissors')) ||
-    (first == 'lizard' && second == ('spock' || 'paper'))
+  (first == 'rock' && (second == 'scissors' || second == 'lizard')) ||
+  (first == 'paper' && (second == 'rock' || second == 'spock')) ||
+  (first == 'scissors' && (second == 'paper' || second == 'lizard')) ||
+  (first == 'spock' && (second == 'rock' || second == 'scissors')) ||
+  (first == 'lizard' && (second == 'spock' || second == 'paper'))
 end
 
 def display_results(player, computer)
@@ -23,17 +23,18 @@ def display_results(player, computer)
   end
 end
 
-user_wins = ''
-computer_wins = ''
-ties = ''
-
 loop do
   choice = ''
+  element_number = ''
   loop do
     prompt("Choose one: #{VALID_CHOICES.join(', ')}")
     choice = Kernel.gets().chomp()
 
-    if VALID_CHOICES.include?(choice) || SHORT_CHOICES.include?(choice)
+    if VALID_CHOICES.include?(choice) 
+      break
+    elsif SHORT_CHOICES.include?(choice)
+      element_number = SHORT_CHOICES.index(choice)
+      choice = VALID_CHOICES[element_number.to_i]
       break
     else
       prompt("Thats not a valid choice")
@@ -41,9 +42,8 @@ loop do
   end
 
   computer_choice = VALID_CHOICES.sample
-  element_number = SHORT_CHOICES.index(choice)
-  
-  prompt("You chose: #{VALID_CHOICES[element_number]}; Computer chose: #{computer_choice}")
+
+  prompt("You chose: #{VALID_CHOICES[element_number.to_i]}; Computer chose: #{computer_choice}")
 
   display_results(choice, computer_choice)
 
