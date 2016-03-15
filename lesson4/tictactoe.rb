@@ -28,7 +28,7 @@ end
 # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 def display_board(brd)
   system 'clear'
-  puts "You're a #{PLAYER_MARKER}. Computer is a #{COMPUTER_MARKER}"
+  prompt "You're a #{PLAYER_MARKER}. Computer is a #{COMPUTER_MARKER}. First to 5 wins!"
   puts "     |     |"
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}"
   puts "     |     |"
@@ -94,6 +94,11 @@ def joinor(array, middle=', ', word='or')
   array.join(middle)
 end
 
+
+player_wins = 0
+computer_wins = 0
+ties = 0
+
 loop do
   board = initialize_board
 
@@ -115,9 +120,29 @@ loop do
     prompt "It's a tie"
   end
 
-  prompt "Play again? (y or n)"
+  if detect_winner(board) == 'Player'
+    player_wins += 1
+  elsif detect_winner(board) == 'Computer'
+    computer_wins += 1
+  else
+    ties += 1
+  end
+  
+  prompt "Player has #{player_wins} wins, Computer has #{computer_wins} wins, there have been #{ties} ties."
+  
+  if player_wins == 5
+    prompt "Player has taken the best of 5 win!"
+    break
+  elsif computer_wins == 5
+    prompt "Computer has taken the best of 5 win!"
+    break
+  end
+  
+  game_number = player_wins + computer_wins + ties + 1
+  prompt "Ready for game number #{game_number}? Hit (y) to continue or (n) to forfeit!"
   answer = gets.chomp
   break unless answer.downcase.start_with?('y')
+  
 end
 
 prompt "Thankyou for playing Tic Tac Toe!"
