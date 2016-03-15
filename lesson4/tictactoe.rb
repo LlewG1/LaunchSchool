@@ -57,7 +57,7 @@ end
 def player_places_piece!(brd)
   square = ''
   loop do
-    prompt "Choose a square (#{empty_squares(brd).join(", ")}):"
+    prompt "Choose a position to place a piece (#{joinor(empty_squares(brd))}):"
     square = gets.chomp.to_i
     break if empty_squares(brd).include?(square)
     prompt "Sorry, that's not a valid choice"
@@ -87,6 +87,11 @@ def detect_winner(brd)
     end
   end
   nil
+end
+
+def joinor(array, middle=', ', word='or')
+  array[-1] = "#{word} #{array.last}" if array.size > 1
+  array.join(middle)
 end
 
 loop do
