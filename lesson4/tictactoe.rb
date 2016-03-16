@@ -65,9 +65,33 @@ def player_places_piece!(brd)
   brd[square] = PLAYER_MARKER
 end
 
+def find_at_risk_square(line, board, marker)
+  if board.values_at(*line).count(marker) == 2
+    board.select{|k,v| line.include?(k) && v == INITIAL_MARKER}.keys.first
+  else
+    nil
+  end
+end
+
 def computer_places_piece!(brd)
-  square = empty_squares(brd).sample
-  brd[square] = COMPUTER_MARKER
+  square = nil
+  WINNING_LINES.each do |line|
+      square = find_at_risk_square(line, brd, PLAYER_MARKER)
+      break if square
+    end
+    
+    if !square 
+      WINNING_LINES.each do |line|
+        square = find_at_risk_square(line,brd, COMPUTER_MARKER)
+        break if square 
+      end
+    end
+    
+    if !square
+      square = empty_squares(brd).sample
+    end
+    
+    brd[square] = COMPUTER_MARKER
 end
 
 def board_full?(brd)
@@ -93,7 +117,6 @@ def joinor(array, middle=', ', word='or')
   array[-1] = "#{word} #{array.last}" if array.size > 1
   array.join(middle)
 end
-
 
 player_wins = 0
 computer_wins = 0
@@ -139,9 +162,9 @@ loop do
   end
   
   game_number = player_wins + computer_wins + ties + 1
-  prompt "Ready for game number #{game_number}? Hit (y) to continue or (n) to forfeit!"
+  prompt "Ready for game number #{game_number}? Hit any key to continue or (n) to forfeit!"
   answer = gets.chomp
-  break unless answer.downcase.start_with?('y')
+  break if answer.downcase.start_with?('n')
   
 end
 
