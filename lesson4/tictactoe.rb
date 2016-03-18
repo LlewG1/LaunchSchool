@@ -32,7 +32,7 @@ end
 
 # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 def display_board(brd)
-  system 'clear'
+  system 'clear' or system 'cls'
   prompt "You're a #{PLAYER_MARKER}. Computer is a #{COMPUTER_MARKER}. First to 5 wins!"
   puts "     |     |"
   puts "  #{brd[1]}  |  #{brd[2]}  |  #{brd[3]}"
@@ -55,16 +55,28 @@ def initialize_board
   new_board
 end
 
-def empty_squares(brd)
-  brd.keys.select { |num| brd[num] == INITIAL_MARKER }
+def first_turn(turn_answer, current_player)
+  if turn_answer.downcase.start_with?('f')
+    current_player[:turn] += 1
+  elsif turn_answer.downcase.start_with?('s')
+    current_player[:turn] += 2
+  end
 end
 
-def empty_square_five(brd)
-  if brd[5] == INITIAL_MARKER
-    5
-  else 
-    nil
+def alternate_player(current_player)
+    current_player[:turn] += 1
+end
+
+def place_piece!(board, current_player, difficulty_answer)
+  if current_player[:turn].odd?
+    computer_places_piece!(board, difficulty_answer)
+  else
+    player_places_piece!(board)
   end
+end
+
+def empty_squares(brd)
+  brd.keys.select { |num| brd[num] == INITIAL_MARKER }
 end
 
 def player_places_piece!(brd)
@@ -103,7 +115,7 @@ def computer_places_piece!(brd, difficulty_answer)
     end
     
     if !square && difficulty_answer.downcase.start_with?('h')
-      square = empty_square_five(brd)
+      square = 5 if brd[5] == INITIAL_MARKER
     end
     
     if !square
@@ -135,6 +147,8 @@ end
 player_wins = 0
 computer_wins = 0
 ties = 0
+# score = { player_wins: 0, computer_wins: 0, ties: 0 }
+current_player = {turn: 0}
 
 prompt "Would you like to play 'easy' or dare to play 'hard'?"
 prompt "Press (e) for easy and (h) for hard"
@@ -144,34 +158,19 @@ prompt "Would you like to go first or second?"
 prompt "Press (f) for first turn or (s) to let computer go first and take second turn"
 turn_answer = gets.chomp
 
+first_turn(turn_answer, current_player)
 
 loop do
   board = initialize_board
-  loop do
-    
-    display_board(board)
-    
-    if turn_answer.downcase.start_with?('f')
-      player_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
   
-      computer_places_piece!(board, difficulty_answer)
-      break if someone_won?(board) || board_full?(board)
-      
-    elsif turn_answer.downcase.start_with?('s')
-      computer_places_piece!(board, difficulty_answer)
-      break if someone_won?(board) || board_full?(board)
-      
-      player_places_piece!(board)
-      break if someone_won?(board) || board_full?(board)
-    end
-  end
-
   display_board(board)
+  binding.pry
+  place_piece!(board, current_player, difficulty_answer)
+  current_player = alternate_player(current_player)
 
   if someone_won?(board)
     prompt "#{detect_winner(board)} won!"
-  else
+  elsif board_full?(board)
     prompt "It's a tie"
   end
 
@@ -193,10 +192,10 @@ loop do
     break
   end
   
-  game_number = player_wins + computer_wins + ties + 1
-  prompt "Ready for game number #{game_number}? Hit any key to continue or (n) to forfeit!"
-  answer = gets.chomp
-  break if answer.downcase.start_with?('n')
+  # game_number = player_wins + computer_wins + ties + 1
+  # prompt "Ready for game number #{game_number}? Hit any key to continue or (n) to forfeit!"
+  # answer = gets.chomp
+  # break if answer.downcase.start_with?('n')
   
 end
 
