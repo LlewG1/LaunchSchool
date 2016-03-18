@@ -25,6 +25,11 @@ def prompt(msg)
   puts "=> #{msg}"
 end
 
+def joinor(array, middle=', ', word='or')
+  array[-1] = "#{word} #{array.last}" if array.size > 1
+  array.join(middle)
+end
+
 # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 def display_board(brd)
   system 'clear'
@@ -54,6 +59,14 @@ def empty_squares(brd)
   brd.keys.select { |num| brd[num] == INITIAL_MARKER }
 end
 
+def empty_square_five(brd)
+  if brd[5] == INITIAL_MARKER
+    5
+  else 
+    nil
+  end
+end
+
 def player_places_piece!(brd)
   square = ''
   loop do
@@ -73,18 +86,24 @@ def find_at_risk_square(line, board, marker)
   end
 end
 
-def computer_places_piece!(brd)
+def computer_places_piece!(brd, difficulty_answer)
   square = nil
   WINNING_LINES.each do |line|
-      square = find_at_risk_square(line, brd, PLAYER_MARKER)
-      break if square
+      if difficulty_answer.downcase.start_with?('h')
+        square = find_at_risk_square(line, brd, COMPUTER_MARKER)
+        break if square
+      end
     end
     
     if !square 
       WINNING_LINES.each do |line|
-        square = find_at_risk_square(line,brd, COMPUTER_MARKER)
+        square = find_at_risk_square(line,brd, PLAYER_MARKER)
         break if square 
       end
+    end
+    
+    if !square && difficulty_answer.downcase.start_with?('h')
+      square = empty_square_five(brd)
     end
     
     if !square
@@ -113,26 +132,39 @@ def detect_winner(brd)
   nil
 end
 
-def joinor(array, middle=', ', word='or')
-  array[-1] = "#{word} #{array.last}" if array.size > 1
-  array.join(middle)
-end
-
 player_wins = 0
 computer_wins = 0
 ties = 0
 
+prompt "Would you like to play 'easy' or dare to play 'hard'?"
+prompt "Press (e) for easy and (h) for hard"
+difficulty_answer = gets.chomp
+
+prompt "Would you like to go first or second?"
+prompt "Press (f) for first turn or (s) to let computer go first and take second turn"
+turn_answer = gets.chomp
+
+
 loop do
   board = initialize_board
-
   loop do
+    
     display_board(board)
-
-    player_places_piece!(board)
-    break if someone_won?(board) || board_full?(board)
-
-    computer_places_piece!(board)
-    break if someone_won?(board) || board_full?(board)
+    
+    if turn_answer.downcase.start_with?('f')
+      player_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+  
+      computer_places_piece!(board, difficulty_answer)
+      break if someone_won?(board) || board_full?(board)
+      
+    elsif turn_answer.downcase.start_with?('s')
+      computer_places_piece!(board, difficulty_answer)
+      break if someone_won?(board) || board_full?(board)
+      
+      player_places_piece!(board)
+      break if someone_won?(board) || board_full?(board)
+    end
   end
 
   display_board(board)
