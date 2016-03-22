@@ -1,7 +1,5 @@
     # Tic Tac Toe by Llew Griffith
 
-require 'pry'
-
 INITIAL_MARKER = ' '
 PLAYER_MARKER = 'X'
 COMPUTER_MARKER = 'O'
@@ -23,7 +21,6 @@ end
 
     # Board setup methods
 
-# rubocop:disable Metrics/MethodLength, Metrics/AbcSize
 def display_board(brd)
   system 'clear' or system 'cls'
   prompt "You're a #{PLAYER_MARKER}. Computer is a #{COMPUTER_MARKER}. First to 5 wins!"
@@ -40,7 +37,6 @@ def display_board(brd)
   puts "     |     |"
   puts ""
 end
-# rubocop:enable Metrics/MethodLength, Metrics, AbcSize
 
 def initialize_board
   new_board = {}
