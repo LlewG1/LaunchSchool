@@ -6,7 +6,7 @@ COMPUTER_MARKER = 'O'
 
 WINNING_LINES = [[1, 2, 3], [4, 5, 6], [7, 8, 9]] +
                 [[1, 4, 7], [2, 5, 8], [3, 6, 9]] +
-                [[1, 5, 9], [3, 5, 7]]
+                [[1, 5, 9], [3, 5, 7]].freeze
 
     # Format methods
 
@@ -45,30 +45,41 @@ def initialize_board
 end
 
 def alternate_player(current_player)
-    if current_player == 'Computer'
-      return 'Player'
-    elsif current_player == 'Player'
-      return 'Computer'
-    end
+  if current_player == 'Computer'
+    'Player'
+  elsif current_player == 'Player'
+    'Computer'
+  end
 end
 
     # Initial user prompts
 
 def game_difficulty
-  prompt "Would you like to play 'easy' or dare to play 'hard'?"
-  prompt "Noobs press (e) for easy, pros press (h) for hard"
-  return gets.chomp
+  answer = ''
+  loop do
+    prompt "Would you like to play 'easy' or dare to play 'hard'?"
+    prompt "Noobs press (e) for easy, pros press (h) for hard"
+    answer = gets.chomp
+    break if answer.downcase.start_with?('e') || answer.downcase.start_with?('h')
+    prompt "Sorry, that's not a valid choice"
+  end
+  answer
 end
 
 def turn_choice
-  prompt "Would you like to go first or second?"
-  prompt "Press (f) for sissy first turn or (s) to play like a boss and let computer go first"
-  turn_answer = gets.chomp
-  
+  turn_answer = ''
+  loop do
+    prompt "Would you like to go first or second?"
+    prompt "Press (f) for first turn or (s) to play like a boss and let computer go first"
+    turn_answer = gets.chomp
+    break if turn_answer.downcase.start_with?('f') || turn_answer.downcase.start_with?('s')
+    prompt "Sorry, that's not a valid choice"
+  end
+
   if turn_answer.downcase.start_with?('f')
-    return 'Player'
+    'Player'
   elsif turn_answer.downcase.start_with?('s')
-    return 'Computer'
+    'Computer'
   end
 end
 
@@ -95,7 +106,7 @@ end
 
 def find_at_risk_square(line, board, marker)
   if board.values_at(*line).count(marker) == 2
-    board.select{|k,v| line.include?(k) && v == INITIAL_MARKER}.keys.first
+    board.select{|piece,empty_square| line.include?(piece) && empty_square == INITIAL_MARKER}.keys.first
   else
     nil
   end
@@ -108,28 +119,28 @@ end
 def computer_places_piece!(brd, difficulty_answer)
   square = nil
   WINNING_LINES.each do |line|
-      if difficulty_answer.downcase.start_with?('h')
-        square = find_at_risk_square(line, brd, COMPUTER_MARKER)
-        break if square
-      end
+    if difficulty_answer.downcase.start_with?('h')
+      square = find_at_risk_square(line, brd, COMPUTER_MARKER)
+      break if square
     end
+  end
     
-    if !square 
-      WINNING_LINES.each do |line|
-        square = find_at_risk_square(line,brd, PLAYER_MARKER)
-        break if square 
-      end
+  if !square 
+    WINNING_LINES.each do |line|
+      square = find_at_risk_square(line,brd, PLAYER_MARKER)
+      break if square 
     end
-    
-    if !square && difficulty_answer.downcase.start_with?('h')
-      square = 5 if brd[5] == INITIAL_MARKER
-    end
-    
-    if !square
-      square = empty_squares(brd).sample
-    end
-    
-    brd[square] = COMPUTER_MARKER
+  end
+  
+  if !square && difficulty_answer.downcase.start_with?('h')
+    square = 5 if brd[5] == INITIAL_MARKER
+  end
+  
+  if !square
+    square = empty_squares(brd).sample
+  end
+  
+  brd[square] = COMPUTER_MARKER
 end
 
     # Game end detection methods
@@ -172,13 +183,11 @@ def display_game_score(board, score)
   end
 end
 
-def win_conditions(score)
+def overall_win_messages(score)
   if score[:player_wins] == 5
     prompt "Player has taken the best of 5 win!"
-    return true
   elsif score[:computer_wins] == 5
     prompt "Computer has taken the best of 5 win!"
-    return true
   end
 end
 
@@ -192,31 +201,13 @@ def score_tracking(score, board)
   end 
 end
 
-def continue_playing(board, score)
+def stop_playing?(board, score)
   if detect_winner(board) || board_full?(board)
     game_number = score[:player_wins] + score[:computer_wins] + score[:ties] + 1
     prompt "Ready for game number #{game_number}? Hit any key to continue or (n) to forfeit!"
     answer = gets.chomp
-    true if answer.downcase.start_with?('n')
+    answer.downcase.start_with?('n')
   end  
-end
-
-    # Reset methods
-
-def reset_player(current_player, first_turn, board)
-  if board_full?(board) || someone_won?(board)
-    return first_turn
-  else
-    return current_player
-  end
-end
-
-def reset_board(board)
-  if board_full?(board) || someone_won?(board)
-    return initialize_board
-  else
-    return board
-  end
 end
 
     # Program
@@ -243,12 +234,17 @@ loop do
   display_game_score(board, score)
 
   # End game if forfeit or 5 wins
-  break if win_conditions(score)
-  break if continue_playing(board, score)
+  
+  overall_win_messages(score)
+  break if score[:player_wins] == 5 || score[:computer_wins] == 5
+  break if stop_playing?(board, score)
   
   # Reset gameboard
-  current_player = reset_player(current_player, first_turn, board)
-  board = reset_board(board)
+
+  if board_full?(board) || someone_won?(board)
+    current_player = first_turn
+    board = initialize_board
+  end
 
 end
 
