@@ -29,7 +29,7 @@ class Score
 end
 
 class Move
-  attr_reader :beats, :value
+  attr_reader :beats, :value, :loses
   VALUES = ['rock', 'paper', 'scissors', 'lizard', 'spock'].freeze
 
   def initialize(value)
@@ -45,13 +45,13 @@ class Move
   end
 
   def beat_move(human)
-    @loses.include?(human.move)
-    return @loses
+    loses.include?(human.move)
+    return loses
   end
 
   def reduce_loss_against(human)
-    @beats.include?(human.move)
-    return @beats
+    beats.include?(human.move)
+    return beats
   end
 end
 
@@ -115,14 +115,14 @@ end
 
 class Human < Player
   def set_name
-    player_name = ""
+    choice = ""
     loop do
       puts "Whats your name?"
-      player_name = gets.chomp
-      break unless player_name.empty?
+      choice = gets.chomp
+      break unless choice.empty?
       puts "Sorry, must enter a valid name."
     end
-    self.name = player_name.downcase.capitalize
+    self.name = choice.downcase.capitalize
   end
 
   def choose
@@ -208,13 +208,21 @@ end
 # ----------------
 
 class RPSGame
-  attr_accessor :human, :computer, :score, :game, :history
+  attr_accessor :human, :computer, :score
 
   def initialize
     @human = Human.new
     @score = Score.new
-
   end
+
+  def display_welcome_message
+    puts " "
+    puts "-" * 50
+    puts "Welcome #{human.name} to Rock, Paper, Scissors, Lizard, Spock"
+    puts "          Best of 5 take the overall win!"
+    puts "                   Goodluck!"
+    puts " "
+  end  
 
   def choose_opponent
     choice = ""
@@ -232,6 +240,7 @@ class RPSGame
       choice = gets.chomp.to_i
       break if [1, 2, 3, 4].include? choice
       puts "Not a valid choice"
+      puts " "
     end
 
     case choice
@@ -241,26 +250,6 @@ class RPSGame
     when 4 then @computer = Sonny.new
     end
 
-  end
-
-  def display_welcome_message
-    puts " "
-    puts "-" * 50
-    puts "Welcome #{human.name} to Rock, Paper, Scissors, Lizard, Spock"
-    puts "          Best of 5 take the overall win!"
-    puts "                   Goodluck!"
-    puts " "
-  end
-
-  def display_goodbye_message
-    puts " "
-    puts "Thanks for playing Rock, Paper, Scissors, Lizard, Spock!"
-  end
-
-  def display_moves
-    puts " "
-    puts "#{human.name} chose:     #{computer.name} chose:"
-    puts "  #{human.move}" + " " * (16 - human.move.to_s.length) + "#{computer.move}"
   end
 
   def display_history
@@ -278,6 +267,12 @@ class RPSGame
   def display_game
     puts "    Ready? Game # #{score.game}"
     puts " "
+  end
+
+  def display_moves
+    puts " "
+    puts "#{human.name} chose:     #{computer.name} chose:"
+    puts "  #{human.move}" + " " * (16 - human.move.to_s.length) + "#{computer.move}"
   end
 
   def determine_winner
@@ -332,6 +327,11 @@ class RPSGame
 
     return true if answer == 'y'
     return false if answer == 'n'
+  end
+
+  def display_goodbye_message
+    puts " "
+    puts "Thanks for playing Rock, Paper, Scissors, Lizard, Spock!"
   end
 
   def play
