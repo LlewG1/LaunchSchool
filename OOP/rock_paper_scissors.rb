@@ -11,8 +11,8 @@ class Score
     self.game += 1   
   end
 
-  def update_score(determine_winner)
-    case determine_winner 
+  def update_score(winner)
+    case winner 
     when 'human'
       self.record[:human] += 1
     when 'computer'
@@ -131,14 +131,14 @@ class Human < Player
     loop do
       puts "Please choose rock, paper, scissors, lizard or spock:"
       choice = gets.chomp 
-      break if Move::VALUES.include? choice
+      break if Move::VALUES.include? choice.downcase
       puts "Sorry, invalid choice."
     end
-    self.move = assign_class(choice)
+    self.move = assign_class(choice.downcase)
   end
 end
 
-class R2D2 < Player # R2D2 loves rock.
+class R2D2 < Player 
   attr_reader :name
 
   def initialize 
@@ -155,10 +155,15 @@ class Hal < Player
 
   def initialize 
     @name = 'Hal'
-    @move_bias = {'rock' => 20, 'paper' => 20, 'scissors' => 20, 'lizard' => 20, 'spock' => 20}
+    @move_bias = {'rock' => 20, 
+                  'paper' => 20, 
+                  'scissors' => 20, 
+                  'lizard' => 20, 
+                  'spock' => 20
+                  }
   end
 
-  def choose(score, human) # very smart, will always go for the win with some logic applied
+  def choose(score, human) 
     self.move = assign_class(sample_move_bias)
     update_move_bias(score, human)
   end
@@ -174,12 +179,16 @@ class Hal < Player
   def update_move_bias(score, human)
     self.move_bias[human.move.beat_move(human).first] += 5
     self.move_bias[human.move.beat_move(human).last] += 5
-    if self.move_bias[human.move.reduce_loss_against(human).first] > 0 then self.move_bias[human.move.reduce_loss_against(human).first] -= 5 end
-    if self.move_bias[human.move.reduce_loss_against(human).last] > 0 then self.move_bias[human.move.reduce_loss_against(human).last] -= 5 end
+    if self.move_bias[human.move.reduce_loss_against(human).first] > 0 
+      self.move_bias[human.move.reduce_loss_against(human).first] -= 5 
+    end
+    if self.move_bias[human.move.reduce_loss_against(human).last] > 0
+      self.move_bias[human.move.reduce_loss_against(human).last] -= 5 
+    end
   end
 end
 
-class Chappie < Player # still innocent, can only guess one of the five choices
+class Chappie < Player 
   attr_reader :name
 
   def initialize 
@@ -198,7 +207,7 @@ class Sonny < Player
     @name = 'Sonny'
   end
 
-  def choose(score, human)  # only knows the three laws
+  def choose(score, human)  
     self.move = assign_class(['rock','paper','scissors'].sample)
   end  
 end
@@ -213,6 +222,10 @@ class RPSGame
   def initialize
     @human = Human.new
     @score = Score.new
+  end
+
+  def clear_screen
+    system('clear') || system('cls')
   end
 
   def display_welcome_message
@@ -255,10 +268,12 @@ class RPSGame
   def display_history
     if score.game > 0 
       puts "-" * (34 + human.name.length + computer.name.length)
-      puts "  Game #   |  #{human.name}" + " " * (13 - human.name.length) + "|   #{computer.name}" + " " * (13 - computer.name.length)
+      print "  Game #   |  #{human.name}" + " " * (13 - human.name.length)
+      puts "|   #{computer.name}" + " " * (13 - computer.name.length)
       puts "-" * (34 + human.name.length + computer.name.length)  
       score.history.each do |game , results|
-        puts "    #{game}         #{results.first}" + " " * (17 - results.first.length) + "#{results.last}  "
+        print "    #{game}" + " " * (10 - game.to_s.length) + "#{results.first}"
+        puts " " * (17 - results.first.length) + "#{results.last}  "
       end
       puts " "
     end
@@ -272,7 +287,8 @@ class RPSGame
   def display_moves
     puts " "
     puts "#{human.name} chose:     #{computer.name} chose:"
-    puts "  #{human.move}" + " " * (16 - human.move.to_s.length) + "#{computer.move}"
+    print "  #{human.move}" + " " * (16 - human.move.to_s.length)
+    puts "#{computer.move}"
   end
 
   def determine_winner
@@ -297,7 +313,9 @@ class RPSGame
 
   def display_score
     puts " "
-    puts "The score is: #{human.name} with #{score.record[:human]} wins, #{computer.name} with #{score.record[:computer]} wins, and #{score.record[:ties]} ties."
+    print "The score is: #{human.name} with #{score.record[:human]} wins, "
+    print "#{computer.name} with #{score.record[:computer]} wins, and"
+    puts " #{score.record[:ties]} ties."
   end
 
   def overall_win?
@@ -320,8 +338,8 @@ class RPSGame
     loop do
       puts " "
       puts "Ready to continue #{human.name}? Enter 'y' to go on or 'n' to quit:"
-      answer = gets.chomp
-      break if ['y', 'n'].include? answer.downcase
+      answer = gets.chomp.downcase
+      break if ['y', 'n'].include? answer
       puts "Sorry, must be 'y' or 'n'"
     end
 
@@ -335,11 +353,11 @@ class RPSGame
   end
 
   def play
-    system 'clear'
+    clear_screen
     display_welcome_message
     sleep 1.5
     choose_opponent
-    system 'clear'
+    clear_screen
     sleep 0.5
     loop do
       display_history
@@ -356,7 +374,7 @@ class RPSGame
       display_score
       break if overall_win?
       break unless play_again?
-      system 'clear'
+      clear_screen
     end
     display_goodbye_message
   end
