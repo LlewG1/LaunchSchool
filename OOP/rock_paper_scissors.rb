@@ -1,38 +1,37 @@
 class Score
   attr_accessor :record, :game, :history
 
-  def initialize 
-    @record = {human: 0, computer: 0, ties: 0}
+  def initialize
+    @record = { human: 0, computer: 0, ties: 0 }
     @game = 0
     @history = {}
   end
 
   def update_game_number
-    self.game += 1   
+    self.game += 1
   end
 
   def update_score(winner)
-    case winner 
+    case winner
     when 'human'
-      self.record[:human] += 1
+      record[:human] += 1
     when 'computer'
-      self.record[:computer] += 1
-    else 
-      self.record[:ties] += 1 
+      record[:computer] += 1
+    else
+      record[:ties] += 1
     end
   end
 
-  def move_history(human, computer) 
-    self.history.store(self.game, [human.to_s, computer.to_s])
+  def move_history(human, computer)
+    history.store(self.game, [human.to_s, computer.to_s])
   end
-
 end
 
 class Move
   attr_reader :beats, :value, :loses
   VALUES = ['rock', 'paper', 'scissors', 'lizard', 'spock'].freeze
 
-  def initialize(value)
+  def initialize
     @move = nil
   end
 
@@ -43,55 +42,40 @@ class Move
   def to_s
     @value
   end
-
-  def beat_move(human)
-    loses.include?(human.move)
-    return loses
-  end
-
-  def reduce_loss_against(human)
-    beats.include?(human.move)
-    return beats
-  end
 end
 
 class Rock < Move
   def initialize
     @value = 'rock'
-    @beats = ['scissors', 'lizard']
-    @loses = ['paper', 'spock']
+    @beats = %w(scissors lizard)
   end
 end
 
 class Paper < Move
   def initialize
     @value = 'paper'
-    @beats = ['rock', 'spock']
-    @loses = ['scissors', 'lizard']
+    @beats = %w(rock spock)
   end
 end
 
 class Scissors < Move
   def initialize
     @value = 'scissors'
-    @beats = ['paper', 'lizard']
-    @loses = ['rock', 'spock']
+    @beats = %w(paper lizard)
   end
 end
 
 class Lizard < Move
   def initialize
     @value = 'lizard'
-    @beats = ['paper', 'spock']
-    @loses = ['scissors', 'rock']
+    @beats = %w(paper spock)
   end
 end
 
 class Spock < Move
   def initialize
     @value = 'spock'
-    @beats = ['rock', 'scissors']
-    @loses = ['lizard', 'paper']
+    @beats = %w(rock scissors)
   end
 end
 
@@ -122,7 +106,7 @@ class Human < Player
       break unless choice.empty?
       puts "Sorry, must enter a valid name."
     end
-    self.name = choice.downcase.capitalize
+    self.name = choice.capitalize
   end
 
   def choose
@@ -130,90 +114,83 @@ class Human < Player
 
     loop do
       puts "Please choose rock, paper, scissors, lizard or spock:"
-      choice = gets.chomp 
-      break if Move::VALUES.include? choice.downcase
+      choice = gets.chomp.downcase
+      break if Move::VALUES.include? choice
       puts "Sorry, invalid choice."
     end
-    self.move = assign_class(choice.downcase)
+    self.move = assign_class(choice)
   end
 end
 
-class R2D2 < Player 
-  attr_reader :name
-
-  def initialize 
+class R2D2 < Player
+  def initialize
     @name = 'R2D2'
   end
 
-  def choose(score, human)
+  def choose(*)
     self.move = assign_class('rock')
   end
 end
 
 class Hal < Player
-  attr_reader :name, :move_bias 
-
-  def initialize 
+  def initialize
     @name = 'Hal'
-    @move_bias = {'rock' => 20, 
-                  'paper' => 20, 
-                  'scissors' => 20, 
-                  'lizard' => 20, 
-                  'spock' => 20
-                  }
+    @move_bias = { 'rock' => 5,
+                   'paper' => 5,
+                   'scissors' => 5,
+                   'lizard' => 5,
+                   'spock' => 5
+                   }
   end
 
-  def choose(score, human) 
-    self.move = assign_class(sample_move_bias)
+  def choose(score, human)
+    self.move = assign_class(determine_move)
     update_move_bias(score, human)
   end
 
-  def sample_move_bias 
-    chances = []
-    self.move_bias.each do |move,chance|
-      chance.times do chances << move end
+  def determine_move
+    possible_moves = []
+    @move_bias.each do |move, chance|
+      chance.times { possible_moves << move }
     end
-    chances.sample
+    possible_moves.sample
   end
 
-  def update_move_bias(score, human)
-    self.move_bias[human.move.beat_move(human).first] += 5
-    self.move_bias[human.move.beat_move(human).last] += 5
-    if self.move_bias[human.move.reduce_loss_against(human).first] > 0 
-      self.move_bias[human.move.reduce_loss_against(human).first] -= 5 
-    end
-    if self.move_bias[human.move.reduce_loss_against(human).last] > 0
-      self.move_bias[human.move.reduce_loss_against(human).last] -= 5 
+  def update_move_bias(*, human)
+    beat_opponent_moves = Move::VALUES - human.move.beats - human.move.value.split
+
+    @move_bias.each do |move, value|
+      if beat_opponent_moves.include? move
+        @move_bias[move] += 1
+      else
+        @move_bias[move] -= 1 unless value <= 0
+      end
     end
   end
 end
 
-class Chappie < Player 
-  attr_reader :name
-
-  def initialize 
+class Chappie < Player
+  def initialize
     @name = 'Chappie'
   end
 
-  def choose(score, human)
+  def choose(*)
     self.move = assign_class(Move::VALUES.sample)
   end
 end
 
 class Sonny < Player
-  attr_reader :name
-
-  def initialize 
+  def initialize
     @name = 'Sonny'
   end
 
-  def choose(score, human)  
-    self.move = assign_class(['rock','paper','scissors'].sample)
-  end  
+  def choose(*)
+    self.move = assign_class(%w(rock paper scissors).sample)
+  end
 end
 
 # ----------------
-#   GAME CLASS 
+#   GAME CLASS
 # ----------------
 
 class RPSGame
@@ -235,7 +212,7 @@ class RPSGame
     puts "          Best of 5 take the overall win!"
     puts "                   Goodluck!"
     puts " "
-  end  
+  end
 
   def choose_opponent
     choice = ""
@@ -262,21 +239,32 @@ class RPSGame
     when 3 then @computer = Chappie.new
     when 4 then @computer = Sonny.new
     end
-
   end
 
   def display_history
-    if score.game > 0 
-      puts "-" * (34 + human.name.length + computer.name.length)
-      print "  Game #   |  #{human.name}" + " " * (13 - human.name.length)
-      puts "|   #{computer.name}" + " " * (13 - computer.name.length)
-      puts "-" * (34 + human.name.length + computer.name.length)  
-      score.history.each do |game , results|
-        print "    #{game}" + " " * (10 - game.to_s.length) + "#{results.first}"
-        puts " " * (17 - results.first.length) + "#{results.last}  "
-      end
-      puts " "
+    if score.game > 0
+      history_header
+      history_results
     end
+  end
+
+  def history_header
+    hum_chars = human.name.length
+    opp_chars = computer.name.length
+    combined_chars = human.name.length + computer.name.length
+
+    puts "-" * (34 + combined_chars)
+    puts "  Game #   |  #{human.name}  #{' ' * (13 - hum_chars)}"\
+         "|   #{computer.name}" + " " * (13 - opp_chars)
+    puts "-" * (34 + combined_chars)
+  end
+
+  def history_results
+    score.history.each do |game, results|
+      puts "    #{game} #{' ' * (10 - game.to_s.length)} #{results.first}" +
+           " " * (17 - results.first.length) + results.last
+    end
+    puts " "
   end
 
   def display_game
@@ -287,8 +275,8 @@ class RPSGame
   def display_moves
     puts " "
     puts "#{human.name} chose:     #{computer.name} chose:"
-    print "  #{human.move}" + " " * (16 - human.move.to_s.length)
-    puts "#{computer.move}"
+    puts "  #{human.move} #{' ' * (16 - human.move.to_s.length)}"\
+         "#{computer.move}"
   end
 
   def determine_winner
@@ -313,16 +301,16 @@ class RPSGame
 
   def display_score
     puts " "
-    print "The score is: #{human.name} with #{score.record[:human]} wins, "
-    print "#{computer.name} with #{score.record[:computer]} wins, and"
-    puts " #{score.record[:ties]} ties."
+    puts "The score is: #{human.name} with #{score.record[:human]} wins, "\
+         "#{computer.name} with #{score.record[:computer]} wins, and"\
+         " #{score.record[:ties]} ties."
   end
 
   def overall_win?
-    if score.record[:human] == 5  
+    if score.record[:human] == 5
       display_overall_win(human.name)
       return true
-      elsif score.record[:computer] == 5
+    elsif score.record[:computer] == 5
       display_overall_win(computer.name)
       return true
     end
@@ -343,8 +331,7 @@ class RPSGame
       puts "Sorry, must be 'y' or 'n'"
     end
 
-    return true if answer == 'y'
-    return false if answer == 'n'
+    answer == 'y'
   end
 
   def display_goodbye_message
