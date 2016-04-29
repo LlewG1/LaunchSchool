@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 class Score
   attr_accessor :record, :game, :history
 
@@ -28,8 +30,8 @@ class Score
 end
 
 class Move
-  attr_reader :beats, :value, :loses
-  VALUES = ['rock', 'paper', 'scissors', 'lizard', 'spock'].freeze
+  attr_reader :beats, :value
+  VALUES = %w(rock paper scissors lizard spock).freeze
 
   def initialize
     @move = nil
@@ -143,9 +145,9 @@ class Hal < Player
                    }
   end
 
-  def choose(score, human)
+  def choose(human)
     self.move = assign_class(determine_move)
-    update_move_bias(score, human)
+    update_move_bias(human)
   end
 
   def determine_move
@@ -156,7 +158,7 @@ class Hal < Player
     possible_moves.sample
   end
 
-  def update_move_bias(*, human)
+  def update_move_bias(human)
     beat_opponent_moves = Move::VALUES - human.move.beats - human.move.value.split
 
     @move_bias.each do |move, value|
@@ -327,7 +329,7 @@ class RPSGame
       puts " "
       puts "Ready to continue #{human.name}? Enter 'y' to go on or 'n' to quit:"
       answer = gets.chomp.downcase
-      break if ['y', 'n'].include? answer
+      break if %w(y n).include? answer
       puts "Sorry, must be 'y' or 'n'"
     end
 
@@ -351,7 +353,7 @@ class RPSGame
       score.update_game_number
       display_game
       human.choose
-      computer.choose(score, human)
+      computer.choose(human)
       display_moves
       sleep 0.8
       display_winner
