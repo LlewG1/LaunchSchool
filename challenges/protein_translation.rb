@@ -1,3 +1,4 @@
+  
   # Attempt 1
 
 # class InvalidCodonError < StandardError; end
@@ -29,6 +30,7 @@
 
 # p Translation.of_rna('UGGUGUUAUUAAUGGUUU')
 
+
 # Attempt 2
 
 class InvalidCodonError < StandardError; end
@@ -55,3 +57,5 @@ class Translation
     strand.scan(/.../).map { |codon| of_codon(codon) }.take_while {|codon| codon != 'STOP' }
   end
 end
+
+
